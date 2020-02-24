@@ -2,6 +2,15 @@ import sys
 import os
 import glob
 
+args = sys.argv
+
+if len(args) != 2:
+    print("Too many arguments!!")
+else:
+    directory = args[1]
+    if not (os.path.isdir(directory)):
+        os.makedirs(directory)
+
 nytimes_com = '''
 This New Liquid Is Magnetic, and Mesmerizing
 
@@ -46,7 +55,6 @@ def saveToFile(name):
             file.write(bloomberg_com)
         elif name == "nytimes.com":
             file.write(nytimes_com)
-
         saved_tabs.append(name[:name.find('.')])
 
 
@@ -59,39 +67,37 @@ def check_saved_tabs(name):
 
 
 def read_saved_tabs(name):
-    for name in glob.glob(f"{directory}/*"):
-        found_file = name
+    for x in glob.glob(f"{directory}/*"):
+        if name in x:
+            found_file = x
     with open(f".\\{found_file}", 'r') as file:
         print(file.read())
 
 
-def check_validity_of_url(url):
-    result = False
-    if "." not in url:
-        if url not in saved_tabs:
-            print("error")
-            return True
-    return result
-
-
+chosen_url = ""
+last_url = ""
 saved_tabs = []
-args = sys.argv
-if len(args) != 2:
-    print("Too many arguments!!")
-else:
-    directory = args[1]
-    if not (os.path.isdir(directory)):
-        os.makedirs(directory)
-    while True:
-        chosen_url = input()
-        if "." not in chosen_url:
-            if chosen_url not in saved_tabs:
-                print("error")
-        if chosen_url == "exit":
-            break
-        elif ".com" in chosen_url:
-            if check_saved_tabs(chosen_url) == False:
-                saveToFile(chosen_url)
-                read_saved_tabs(chosen_url)
-        elif chosen_url in saved_tabs:
-            read_saved_tabs(chosen_url)
+history = []
+
+while chosen_url != 'exit':
+    chosen_url = input()
+    if chosen_url == 'back':
+        if len(history):
+            try:
+                history.pop()
+                last = history.pop()
+                read_saved_tabs(last)
+                continue
+            except:
+                continue
+    elif len(saved_tabs) and chosen_url in saved_tabs:
+        read_saved_tabs(chosen_url)
+        history.append(chosen_url)
+
+    elif ".com" in chosen_url:
+        saveToFile(chosen_url)
+        read_saved_tabs(chosen_url)
+        history.append(chosen_url)
+
+    else:
+        print("error")
