@@ -1,6 +1,7 @@
 import sys
 import os
 import glob
+import requests
 
 args = sys.argv
 
@@ -11,66 +12,19 @@ else:
     if not (os.path.isdir(directory)):
         os.makedirs(directory)
 
-nytimes_com = '''
-This New Liquid Is Magnetic, and Mesmerizing
-
-Scientists have created “soft” magnets that can flow 
-and change shape, and that could be a boon to medicine 
-and robotics. (Source: New York Times)
-
-
-Most Wikipedia Profiles Are of Men. This Scientist Is Changing That.
-
-Jessica Wade has added nearly 700 Wikipedia biographies for
- important female and minority scientists in less than two 
- years.
-
-'''
-
-bloomberg_com = '''
-The Space Race: From Apollo 11 to Elon Musk
-
-It's 50 years since the world was gripped by historic images
- of Apollo 11, and Neil Armstrong -- the first man to walk 
- on the moon. It was the height of the Cold War, and the charts
- were filled with David Bowie's Space Oddity, and Creedence's 
- Bad Moon Rising. The world is a very different place than 
- it was 5 decades ago. But how has the space race changed since
- the summer of '69? (Source: Bloomberg)
-
-
-Twitter CEO Jack Dorsey Gives Talk at Apple Headquarters
-
-Twitter and Square Chief Executive Officer Jack Dorsey 
- addressed Apple Inc. employees at the iPhone maker’s headquarters
- Tuesday, a signal of the strong ties between the Silicon Valley giants.
-'''
-
-# write your code here
-
 
 def saveToFile(name):
-    with open(f".\\{directory}\\{name}.txt", 'w') as file:
-        if name == "bloomberg.com":
-            file.write(bloomberg_com)
-        elif name == "nytimes.com":
-            file.write(nytimes_com)
-        saved_tabs.append(name[:name.find('.')])
-
-
-def check_saved_tabs(name):
-    try:
-        open(f".\\{directory}\\{name}.txt", 'r')
-    except:
-        return False
-    return True
+    with open(f".\\{directory}\\{name[8:]}.txt", 'w', encoding='utf8', errors='replace') as file:
+        r = requests.get(name)
+        file.write(r.text)
+        saved_tabs.append(name[8:name.find('.')])
 
 
 def read_saved_tabs(name):
     for x in glob.glob(f"{directory}/*"):
-        if name in x:
+        if name[8:] in x:
             found_file = x
-    with open(f".\\{found_file}", 'r') as file:
+    with open(f".\\{found_file}", 'r', encoding='utf8', errors='replace') as file:
         print(file.read())
 
 
@@ -90,11 +44,14 @@ while chosen_url != 'exit':
                 continue
             except:
                 continue
+
     elif len(saved_tabs) and chosen_url in saved_tabs:
         read_saved_tabs(chosen_url)
         history.append(chosen_url)
 
     elif ".com" in chosen_url:
+        if chosen_url.startswith("https") == False:
+            chosen_url = "https://" + chosen_url
         saveToFile(chosen_url)
         read_saved_tabs(chosen_url)
         history.append(chosen_url)
