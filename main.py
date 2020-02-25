@@ -3,6 +3,7 @@ import os
 import glob
 import requests
 from bs4 import BeautifulSoup
+from colorama import Fore, Back, Style
 
 args = sys.argv
 
@@ -30,11 +31,12 @@ def saveToFile(name):
             'input',
             'script',
             'style',
-            # there may be more elements you don't want, such as "style", etc.
         ]
         for x in html:
             if x.parent.name not in blacklist:
                 if len(x.strip()) != 0:
+                    if x.parent.name == "a":
+                        output += Fore.BLUE
                     output += '{}'.format(x)
 
         file.write(output)
