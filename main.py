@@ -2,6 +2,7 @@ import sys
 import os
 import glob
 import requests
+from bs4 import BeautifulSoup
 
 args = sys.argv
 
@@ -16,7 +17,27 @@ else:
 def saveToFile(name):
     with open(f".\\{directory}\\{name[8:]}.txt", 'w', encoding='utf8', errors='replace') as file:
         r = requests.get(name)
-        file.write(r.text)
+        soup = BeautifulSoup(r.content, 'html.parser')
+        html = soup.find_all(text=True)
+        output = ''
+        blacklist = [
+            '[document]',
+            'noscript',
+            'header',
+            'html',
+            'meta',
+            'head',
+            'input',
+            'script',
+            'style',
+            # there may be more elements you don't want, such as "style", etc.
+        ]
+        for x in html:
+            if x.parent.name not in blacklist:
+                if len(x.strip()) != 0:
+                    output += '{}'.format(x)
+
+        file.write(output)
         saved_tabs.append(name[8:name.find('.')])
 
 
@@ -28,6 +49,7 @@ def read_saved_tabs(name):
         print(file.read())
 
 
+# variables
 chosen_url = ""
 last_url = ""
 saved_tabs = []
@@ -49,7 +71,7 @@ while chosen_url != 'exit':
         read_saved_tabs(chosen_url)
         history.append(chosen_url)
 
-    elif ".com" in chosen_url:
+    elif ".com" in chosen_url or ".org" in chosen_url:
         if chosen_url.startswith("https") == False:
             chosen_url = "https://" + chosen_url
         saveToFile(chosen_url)
